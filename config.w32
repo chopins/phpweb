@@ -1,0 +1,29 @@
+ARG_ENABLE("phpweb", "Build PHPWEB SAPI", "no");
+
+if (PHP_PHPWEB != "no") {
+  var phpweb_incs = "";
+  var phpweb_libs = "";
+  var phpweb_source = "sapi/phpweb/phpweb.c";
+
+  if (FSO.GetHostPlatform() == "linux") {
+    // Not used for Windows config.w32 (handled by config.m4 on Linux)
+    ERROR("config.w32 should not be used on Linux, use configure");
+  }
+
+  // Windows: require WebView2 SDK
+  var webview2_inc = WEBVIEW2_INC ? WEBVIEW2_INC : null;
+  var webview2_lib = WEBVIEW2_LIB ? WEBVIEW2_LIB : null;
+
+  if (!webview2_inc || !webview2_lib) {
+    ERROR("Environment variables WEBVIEW2_INC and WEBVIEW2_LIB must be set to build phpweb on Windows");
+  }
+
+  phpweb_incs += " " + webview2_inc;
+  phpweb_libs += webview2_lib + "\\WebView2Loader.dll.lib " + "ole32.lib oleaut32.lib uuid.lib";
+
+  EXTENSION("phpweb", phpweb_source, null, "/D HAVE_PHPWEB=1");
+  ADD_FLAG("CFLAGS_PHPWEB", "/I" + webview2_inc);
+  AC_DEFINE("HAVE_PHPWEB", "1", "Build PHPWEB SAPI");
+  // SAPI program: produce phpweb.exe
+  SAPI("phpweb", phpweb_source, phpweb_incs, phpweb_libs);
+}
