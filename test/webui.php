@@ -1,7 +1,10 @@
 #!/bin/php
 <?php
-for($i=0;$i < 10; $i++) {
+header("HTTP/1.1 404 Not Found");
 echo 'test';
-sleep(1);
+
+for($i=0;$i < 3; $i++) {
+echo 'test';
+sleep(5);
 }
 exit;
